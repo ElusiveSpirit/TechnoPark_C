@@ -16,48 +16,45 @@ int trim(char **text, size_t length, char** out_text)
 
 	for (size_t i = 0; i < length; i++)
 	{
-		size_t currentLength = 0;
-		char *pCurLine = *(text + i);
-		bool isSpace = false;
 
-		// Count the length of further array
-		do  {
-
-			if (*pCurLine == ' ') {
-				if (!isSpace)
-					isSpace = true;
-			} else {
-				currentLength++;
-
-				if (isSpace) {
-					currentLength++;
-					isSpace = false;
-				}
-			}
-		} while (*(pCurLine++) != '\0');
-		currentLength++;
-		*(out_text + i) = (char*)malloc(sizeof(char)* currentLength);
+		*(out_text + i) = (char*)malloc(sizeof(char));
 
 		if (errno == ENOMEM || *(out_text + i) == NULL) {
 			printf("[error]");
 			return 1;
 		}
-
-		// Copy the array
-		pCurLine = *(text + i);
-		isSpace = false;
+		
+			
+		char *pCurLine = *(text + i);
+		bool isSpace = false;
+		
+		size_t out_size = 0;
 		char *pOutLine = *(out_text + i);
 		do {
+			// Increasing out_size in the end.
 
 			if (*pCurLine == ' ') {
 				if (!isSpace)
 					isSpace = true;
 			} else {
 				if (isSpace) {
-					*(pOutLine++) = ' ';
+					pOutLine = (char* )realloc(pOutLine, (out_size + 2) * sizeof(char));	
+					
+					if (errno == ENOMEM || pOutLine == NULL) {
+						printf("[error]");
+						return 1;
+					}
+					*(pOutLine + out_size++) = ' ';
 					isSpace = false;
+				} else {
+					pOutLine = (char* )realloc(pOutLine, (out_size + 1) * sizeof(char));	
+					if (errno == ENOMEM || pOutLine == NULL) {
+						printf("[error]");
+						return 1;
+					}
 				}
-				*(pOutLine++) = *pCurLine;
+
+				*(pOutLine + out_size++) = *pCurLine;
 			}
 		} while (*(pCurLine++) != '\0');
 	}
