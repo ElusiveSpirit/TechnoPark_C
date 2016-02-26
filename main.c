@@ -23,39 +23,53 @@ int trim(char **text, size_t length, char** out_text)
 			printf("[error]");
 			return 1;
 		}
-		
-			
+
+
 		char *pCurLine = *(text + i);
 		bool isSpace = false;
-		
+
 		size_t out_size = 0;
 		char *pOutLine = *(out_text + i);
-		do {
+        char *pCopyFrom = NULL;
+        do {
 			// Increasing out_size in the end.
 
-			if (*pCurLine == ' ') {
-				if (!isSpace)
+			if (*pCurLine == ' ' || *pCurLine == '\n') {
+				if (!isSpace) { // If a first space -> copy array from the first char
 					isSpace = true;
-			} else {
-				if (isSpace) {
-					pOutLine = (char* )realloc(pOutLine, (out_size + 2) * sizeof(char));	
-					
-					if (errno == ENOMEM || pOutLine == NULL) {
-						printf("[error]");
-						return 1;
-					}
-					*(pOutLine + out_size++) = ' ';
-					isSpace = false;
-				} else {
-					pOutLine = (char* )realloc(pOutLine, (out_size + 1) * sizeof(char));	
-					if (errno == ENOMEM || pOutLine == NULL) {
-						printf("[error]");
-						return 1;
-					}
-				}
+                    if (pCopyFrom == NULL) // If spaces in line are first
+                        pCopyFrom = pCurLine;
 
-				*(pOutLine + out_size++) = *pCurLine;
-			}
+                    size_t delta = pCurLine - pCopyFrom + 1;
+					if (delta > 1)
+                        pOutLine = (char* )realloc(pOutLine, (out_size + delta)  * sizeof(char));
+					if (errno == ENOMEM || pOutLine == NULL) {
+						printf("[error]");
+						return 1;
+					}
+
+                    pOutLine = memcpy(pOutLine + out_size, pCopyFrom, delta);
+                    pOutLine = pOutLine - out_size;
+                    if (pOutLine == NULL) {
+                    	printf("[error]");
+                    	return 1;
+                    }
+
+                    out_size += delta;
+
+                     if (pOutLine == NULL) {
+                        printf("[error]");
+                        return 1;
+                    }
+                    pCopyFrom = NULL;
+                }
+			} else {
+		        if (pCopyFrom == NULL)
+                    pCopyFrom = pCurLine;
+                if (isSpace)
+                    isSpace = false;
+
+            }
 		} while (*(pCurLine++) != '\0');
 	}
 	return 0;
@@ -77,7 +91,7 @@ int main()
 	}
 	while (fgets(buff, MAX_SIZE, stdin) != NULL) {
 		input_array[size++] = buff;
-        buff = (char* )malloc(MAX_SIZE * sizeof(char));	
+        buff = (char* )malloc(MAX_SIZE * sizeof(char));
 
 		input_array = (char** )realloc(input_array, (size + 1) * sizeof(char* ));
 		if (errno == ENOMEM || input_array == NULL) {
