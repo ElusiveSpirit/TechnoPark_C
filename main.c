@@ -76,9 +76,8 @@ int main()
 		return 0;
 	}
 	while (fgets(buff, MAX_SIZE, stdin) != NULL) {
-		input_array[size] = (char* )malloc(MAX_SIZE * sizeof(char));
-		strcpy(input_array[size], buff);
-		size++;
+		input_array[size++] = buff;
+        buff = (char* )malloc(MAX_SIZE * sizeof(char));	
 
 		input_array = (char** )realloc(input_array, (size + 1) * sizeof(char* ));
 		if (errno == ENOMEM || input_array == NULL) {
