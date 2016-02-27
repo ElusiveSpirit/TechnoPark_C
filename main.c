@@ -1,3 +1,20 @@
+//
+//  main.c
+//  c_A8
+//
+//  Created by Konstantin on 26.02.16.
+//  Copyright (c) 2016 Manyakhin. All rights reserved.
+//
+
+/*    TASK
+********************************************************
+    Составить программу построчной обработки текста,
+  в результате которой каждая группа повторяющихся пробелов
+  заменяется на один пробел.
+********************************************************
+*/
+
+
 #include "stdlib.h"
 #include "stdbool.h"
 #include "stdio.h"
@@ -9,21 +26,17 @@
 // Output - int
 //   0 - ok
 //   1 - error
-int trim(char **text, size_t length, char** out_text)
-{
+int trim(char **text, size_t length, char** out_text) {
     if (text == NULL || out_text == NULL || length == 0)
-    return 1;
+    		return 1;
 
-    for (size_t i = 0; i < length; i++)
-    {
-
+    for (size_t i = 0; i < length; i++) {
         *(out_text + i) = (char*)malloc(sizeof(char));
 
         if (errno == ENOMEM || *(out_text + i) == NULL) {
             printf("[error]");
             return 1;
         }
-
 
         char *pCurLine = *(text + i);
         bool isSpace = false;
@@ -32,11 +45,14 @@ int trim(char **text, size_t length, char** out_text)
         char *pOutLine = *(out_text + i);
         char *pCopyFrom = NULL;
         do {
-      // Increasing out_size in the end.
-            if (*pCurLine == ' ' || *pCurLine == '\n') {
-                if (!isSpace) { // If a first space -> copy array from the first char
+            // Increasing out_size in the end.
+            if (*pCurLine == ' ' ||
+                    *pCurLine == '\0') {
+                // If a first space -> copy array from the first char
+                if (!isSpace) {
                     isSpace = true;
-                    if (pCopyFrom == NULL) // If spaces in line are first
+                    // If spaces in line are first
+                    if (pCopyFrom == NULL)
                         pCopyFrom = pCurLine;
 
                     size_t delta = pCurLine - pCopyFrom + 1;
@@ -56,7 +72,7 @@ int trim(char **text, size_t length, char** out_text)
 
                     out_size += delta;
 
-                     if (pOutLine == NULL) {
+                    if (pOutLine == NULL) {
                         printf("[error]");
                         return 1;
                     }
@@ -73,8 +89,7 @@ int trim(char **text, size_t length, char** out_text)
     return 0;
 }
 
-int main()
-{
+int main() {
     char** input_array = (char** )malloc(sizeof(char* ));
     if (errno == ENOMEM || input_array == NULL) {
         printf("[error]");
