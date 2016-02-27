@@ -28,61 +28,48 @@
 //   1 - error
 int trim(char **text, size_t length, char** out_text) {
     if (text == NULL || out_text == NULL || length == 0)
-    		return 1;
+        return 1;
 
     for (size_t i = 0; i < length; i++) {
-        *(out_text + i) = (char*)malloc(sizeof(char));
+        size_t currentLength = 0;
+        char *pCurLine = *(text + i);
+        bool isSpace = false;
+
+        // Count the length of further array
+        do  {
+            if (*pCurLine == ' ') {
+                if (!isSpace)
+                    isSpace = true;
+            } else {
+                currentLength++;
+                if (isSpace) {
+                    currentLength++;
+                    isSpace = false;
+                }
+            }
+        } while (*(pCurLine++) != '\0');
+        currentLength++;
+        *(out_text + i) = (char*)malloc(sizeof(char)* currentLength);
 
         if (errno == ENOMEM || *(out_text + i) == NULL) {
             printf("[error]");
             return 1;
         }
 
-        char *pCurLine = *(text + i);
-        bool isSpace = false;
-
-        size_t out_size = 0;
+        // Copy the array
+        pCurLine = *(text + i);
+        isSpace = false;
         char *pOutLine = *(out_text + i);
-        char *pCopyFrom = NULL;
         do {
-            // Increasing out_size in the end.
-            if (*pCurLine == ' ' ||
-                    *pCurLine == '\0') {
-                // If a first space -> copy array from the first char
-                if (!isSpace) {
+            if (*pCurLine == ' ') {
+                if (!isSpace)
                     isSpace = true;
-                    // If spaces in line are first
-                    if (pCopyFrom == NULL)
-                        pCopyFrom = pCurLine;
-
-                    size_t delta = pCurLine - pCopyFrom + 1;
-                    if (delta > 1)
-                        pOutLine = (char* )realloc(pOutLine, (out_size + delta)  * sizeof(char));
-                    if (errno == ENOMEM || pOutLine == NULL) {
-                        printf("[error]");
-                        return 1;
-                    }
-
-                    pOutLine = memcpy(pOutLine + out_size, pCopyFrom, delta);
-                    pOutLine = pOutLine - out_size;
-                    if (pOutLine == NULL) {
-                        printf("[error]");
-                        return 1;
-                    }
-
-                    out_size += delta;
-
-                    if (pOutLine == NULL) {
-                        printf("[error]");
-                        return 1;
-                    }
-                    pCopyFrom = NULL;
-                }
             } else {
-                if (pCopyFrom == NULL)
-                    pCopyFrom = pCurLine;
-                if (isSpace)
+                if (isSpace) {
+                    *(pOutLine++) = ' ';
                     isSpace = false;
+                }
+                *(pOutLine++) = *pCurLine;
             }
         } while (*(pCurLine++) != '\0');
     }
