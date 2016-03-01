@@ -57,7 +57,8 @@ int trim(char **text, size_t length, char** out_text) {
 
                     size_t delta = pCurLine - pCopyFrom + 1;
                     if (delta > 1)
-                        pOutLine = (char* )realloc(pOutLine, (out_size + delta)  * sizeof(char));
+                        pOutLine = (char* )realloc(pOutLine,
+                            (out_size + delta)  * sizeof(char));
                     if (errno == ENOMEM || pOutLine == NULL) {
                         printf("[error]");
                         return 1;
@@ -106,7 +107,8 @@ int main() {
         input_array[size++] = buff;
         buff = (char* )malloc(MAX_SIZE * sizeof(char));
 
-        input_array = (char** )realloc(input_array, (size + 1) * sizeof(char* ));
+        input_array = (char** )realloc(input_array,
+            (size + 1) * sizeof(char* ));
         if (errno == ENOMEM || input_array == NULL) {
             printf("[error]");
             return 0;
