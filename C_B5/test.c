@@ -1,13 +1,17 @@
 #include "stdio.h"
 #include "stdlib.h"
-#define STRLEN(s) ({int retval = 0; while (*(s + ++retval)); retval;})
+#define STRLEN(s) ({size_t retval = 0; while (*(s + ++retval)); retval;})
 
 int main() {
     char *a = (char *)malloc(20 * sizeof(char));
-    scanf("%s", a);
-    printf("%d\n", STRLEN(a));
-    int s = 0;
-    while (*(a + ++s));
-    printf("%d\n", s);
-    return 0;
+
+    char *b = (char* )realloc(a, 30 * sizeof(char));
+    if (b != NULL)
+        printf("b = %i\n", STRLEN(b));
+    if (a != NULL)
+        printf("a = %i\n",  STRLEN(a));
+    char *c = NULL;
+    printf("c = %i\n", c);
+
+    free(b);
 }
