@@ -45,14 +45,14 @@ int trim(char **text, size_t length, char** out_text) {
                 // If a first space -> copy array from the first char
                 if (!isSpace) {
                     isSpace = true;
-                    // If spaces in line are first
+                    // If space in line are first
                     if (pCopyFrom == NULL)
                         pCopyFrom = pCurLine;
 
                     size_t delta = pCurLine - pCopyFrom + 1;
                     if (pOutLine == NULL)
                         pOutLine = (char* )malloc((out_size + delta)  * sizeof(char));
-                    else 
+                    else
                         pOutLine = (char* )realloc(pOutLine, (out_size + delta)  * sizeof(char));
                     if (errno == ENOMEM || pOutLine == NULL) {
                         printf("[error]");
