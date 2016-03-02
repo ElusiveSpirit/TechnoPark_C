@@ -14,7 +14,6 @@
 ********************************************************
 */
 
-
 #include "stdlib.h"
 #include "stdbool.h"
 #include "stdio.h"
@@ -24,116 +23,128 @@
 #define MAX_SIZE 1024
 
 // Output - int
-//   0 - ok
-//   1 - error
+// 	0 - ok
+// 	1 - error
 int trim(char **text, size_t length, char** out_text) {
-    if (text == NULL || out_text == NULL || length == 0)
-    		return 1;
+	if (text == NULL || out_text == NULL || length == 0)
+		return 1;
 
-    for (size_t i = 0; i < length; i++) {
+	for (size_t i = 0; i < length; i++) {
+		size_t currentLength = 0;
+		char *pCurLine = *(text + i);
+		bool isSpace = false;
 
-        char *pCurLine = *(text + i);
-        bool isSpace = false;
+		// Count the length of further array
+		do  {
+			if (*pCurLine == ' ') {
+				if (!isSpace)
+					isSpace = true;
+			} else {
+				currentLength++;
+				if (isSpace) {
+					currentLength++;
+					isSpace = false;
+				}
+			}
+		} while (*(pCurLine++) != '\0');
+		currentLength++;
+		*(out_text + i) = (char*)malloc(sizeof(char)* currentLength);
 
-        size_t out_size = 0;
-        char *pOutLine = *(out_text + i);
-        char *pCopyFrom = NULL;
-        do {
-            // Increasing out_size in the end.
-            if (*pCurLine == ' ' ||
-                    *pCurLine == '\0') {
-                // If a first space -> copy array from the first char
-                if (!isSpace) {
-                    isSpace = true;
-                    // If space in line are first
-                    if (pCopyFrom == NULL)
-                        pCopyFrom = pCurLine;
+		if (errno == ENOMEM || *(out_text + i) == NULL) {
+			printf("[error]");
+			return 1;
+		}
 
-                    size_t delta = pCurLine - pCopyFrom + 1;
-                    if (pOutLine == NULL)
-                        pOutLine = (char* )malloc((out_size + delta)  * sizeof(char));
-                    else
-                        pOutLine = (char* )realloc(pOutLine, (out_size + delta)  * sizeof(char));
-                    if (errno == ENOMEM || pOutLine == NULL) {
-                        printf("[error]");
-                        return 1;
-                    }
-
-                    pOutLine = memcpy(pOutLine + out_size, pCopyFrom, delta);
-                    pOutLine = pOutLine - out_size;
-                    if (pOutLine == NULL) {
-                        printf("[error]");
-                        return 1;
-                    }
-
-                    out_size += delta;
-                    pCopyFrom = NULL;
-                }
-            } else {
-                if (pCopyFrom == NULL)
-                    pCopyFrom = pCurLine;
-                if (isSpace)
-                    isSpace = false;
-            }
-        } while (*(pCurLine++) != '\0');
-    }
-    return 0;
+		// Copy the array
+		pCurLine = *(text + i);
+		isSpace = false;
+		char *pOutLine = *(out_text + i);
+		do {
+			if (*pCurLine == ' ') {
+				if (!isSpace)
+					isSpace = true;
+			} else {
+				if (isSpace) {
+					*(pOutLine++) = ' ';
+					isSpace = false;
+				}
+				*(pOutLine++) = *pCurLine;
+			}
+		} while (*(pCurLine++) != '\0');
+	}
+	return 0;
 }
 
 int main() {
-    char** input_array = (char** )malloc(sizeof(char* ));
-    if (errno == ENOMEM || input_array == NULL) {
-        printf("[error]");
-        return 0;
-    }
+	char** input_array = (char** )malloc(sizeof(char* ));
+	if (errno == ENOMEM || input_array == NULL) {
+		printf("[error]");
+		return 0;
+	}
 
-    size_t size = 0;
-    char* buff = (char* )malloc(MAX_SIZE * sizeof(char));
-    if (errno == ENOMEM || buff == NULL) {
-        printf("[error]");
+	size_t size = 0;
+	char* buff = (char* )malloc(MAX_SIZE * sizeof(char));
+	if (errno == ENOMEM || buff == NULL) {
+		printf("[error]");
+        free(input_array);
         return 0;
-    }
-    while (fgets(buff, MAX_SIZE, stdin) != NULL) {
+	}
+	while (fgets(buff, MAX_SIZE, stdin) != NULL) {
         input_array = (char** )realloc(input_array, (++size) * sizeof(char* ));
-        input_array[size - 1] = buff;
-        buff = (char* )malloc(MAX_SIZE * sizeof(char));
+		input_array[size - 1] = buff;
 
-        if (errno == ENOMEM || input_array == NULL) {
-            printf("[error]");
-            return 0;
-        }
-    }
-    free(buff);
+		buff = (char* )malloc(MAX_SIZE * sizeof(char));
+
+		if (errno == ENOMEM || input_array == NULL) {
+			printf("[error]");
+			return 0;
+		}
+	}
+	free(buff);
     if (size == 0) {
         free(input_array);
         return 0;
     }
 
-    char** out_array = (char**)malloc(size * sizeof(char*));
-    if (errno == ENOMEM || out_array == NULL) {
-        printf("[error]");
+	char** out_array = (char**)malloc(size * sizeof(char*));
+	if (errno == ENOMEM || out_array == NULL) {
+		printf("[error]");
+        for (size_t i = 0; i < size; i++)
+            free(input_array[i]);
+        free(input_array);
+
         return 0;
+	}
+	// solution Function
+	if (trim(input_array, size, out_array) == 1) {
+        for (size_t i = 0; i < size; i++) {
+            free(out_array[i]);
+            free(input_array[i]);
+        }
+        free(out_array);
+        free(input_array);
+    	return 0;
     }
-    // solution Function
-    if (trim(input_array, size, out_array) == 1)
-        return 0;
 
-    if (out_array == NULL) {
-        printf("[error]");
-        return 0;
-    }
+	if (out_array == NULL) {
+		printf("[error]");
+        for (size_t i = 0; i < size; i++)
+            free(input_array[i]);
+        free(input_array);
+    	return 0;
+	}
 
-    // Output
-    for (size_t i = 0; i < size; i++)
-        printf("%s", out_array[i]);
+	// Output
+	for (size_t i = 0; i < size; i++)
+		printf("%s", out_array[i]);
 
-    // freeAll
-    for (size_t i = 0; i < size; i++) {
-        free(input_array[i]);
-        free(out_array[i]);
-    }
-    free(input_array);
-    free(out_array);
+	// freeAll
+	for (size_t i = 0; i < size; i++) {
+		free(input_array[i]);
+		free(out_array[i]);
+	}
+	free(input_array);
+	free(out_array);
 
-    return 0;
+	return 0;
 }
