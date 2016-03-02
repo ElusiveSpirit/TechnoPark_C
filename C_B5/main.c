@@ -98,6 +98,9 @@ int getBool(char** input, size_t size, bool result) {
 
     // Массив для хранения "переменных"
     Variable *variables = NULL;
+    // Два массива вместо структуры
+    char **var_char = NULL;
+    bool *var_bool = NULL;
     size_t var_size = 0;
 
     for (size_t i = 0; i < size; i++) {
@@ -109,34 +112,53 @@ int getBool(char** input, size_t size, bool result) {
             // Если найден знак '=', то это строка с переменной
             // Сохранение её значения в массив variables
             if (*letter == '=') {
-                variables = (Variable*)realloc(variables,
-                    (++var_size) * sizeof(Variable));
-                if (errno == ENOMEM || variables == NULL) {
-                    printf("[error]");
-                    return 1;
-                }
-                variables[var_size - 1].name = (char*)malloc(
+
+                char *temp = (char*)malloc(
                     (letter - line + 1) * sizeof(char));
-                if (errno == ENOMEM || variables[size - 1].name == NULL) {
+                if (errno == ENOMEM || temp == NULL) {
                     printf("[error]");
                     return 1;
                 }
-                variables[size - 1].name = memcpy(
-                    variables[size - 1].name,
+                temp = memcpy(
+                    temp,
                     line,
                     (size_t)(letter - line));
-                variables[size - 1].name[(size_t)(letter - line)] = '\0';
+                temp[(size_t)(letter - line)] = '\0';
 
-                int find_result = findInArray(++letter, reserved, RESERVED_SIZE);
-                switch (find_result) {
+                // Проверка на зарезервированные слова
+                if (findInArray(temp, reserved, RESERVED_SIZE) != -1) {
+                    printf("[error]");
+                    return 1;
+                }
+                // Проверка на вторичный.. ввод переменной
+                int find_result = findInArray(temp, var_char, var_size);
+                if (find_result == -1) {
+                    var_char = (char **)realloc(var_char,
+                        (++var_size) * sizeof(char *));
+                    var_bool = (bool *)realloc(var_bool,
+                        (var_size) * sizeof(bool));
+                    if (errno == ENOMEM || var_bool == NULL || var_char == NULL) {
+                        printf("[error]");
+                        return 1;
+                    }
+                    var_char[var_size - 1] = temp;
+                }
+
+                switch (findInArray(++letter, reserved, RESERVED_SIZE)) {
                     case True:
-                        variables[size - 1].condition = true;
+                        if (find_result == -1)
+                            var_bool[size - 1] = true;
+                        else
+                            var_bool[find_result] = true;
                         break;
                     case False:
-                        variables[size - 1].condition = false;
+                        if (find_result == -1)
+                            var_bool[size - 1] = false;
+                        else
+                            var_bool[find_result] = false;
                         break;
                     default:
-                        // Обнулить переменные
+                        // Освободить память
                         printf("[error]");
                         return 1;
                 }
