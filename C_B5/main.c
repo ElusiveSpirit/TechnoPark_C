@@ -106,15 +106,16 @@ int getBool(char** input, size_t size, bool result) {
     for (size_t i = 0; i < size; i++) {
         // Сначала идёт ввод переменных
         char *line = input[i];
-        char *letter = line;
+        char *token_cur_char = line;
+        char *token_first_char = line;
         // Проверка на ввод переменной
         do {
             // Если найден знак '=', то это строка с переменной
             // Сохранение её значения в массив variables
-            if (*letter == '=') {
+            if (*token_cur_char == '=') {
 
                 char *temp = (char*)malloc(
-                    (letter - line + 1) * sizeof(char));
+                    (token_cur_char - line + 1) * sizeof(char));
                 if (errno == ENOMEM || temp == NULL) {
                     printf("[error]");
                     return 1;
@@ -122,8 +123,8 @@ int getBool(char** input, size_t size, bool result) {
                 temp = memcpy(
                     temp,
                     line,
-                    (size_t)(letter - line));
-                temp[(size_t)(letter - line)] = '\0';
+                    (size_t)(token_cur_char - line));
+                temp[(size_t)(token_cur_char - line)] = '\0';
 
                 // Проверка на зарезервированные слова
                 if (findInArray(temp, reserved, RESERVED_SIZE) != -1) {
@@ -144,7 +145,7 @@ int getBool(char** input, size_t size, bool result) {
                     var_char[var_size - 1] = temp;
                 }
 
-                switch (findInArray(++letter, reserved, RESERVED_SIZE)) {
+                switch (findInArray(++token_cur_char, reserved, RESERVED_SIZE)) {
                     case True:
                         if (find_result == -1)
                             var_bool[size - 1] = true;
@@ -162,10 +163,16 @@ int getBool(char** input, size_t size, bool result) {
                         printf("[error]");
                         return 1;
                 }
+            } else if (*token_cur_char == '(' ||
+                       *token_cur_char == ')') {
+
+
+            } else if (*token_cur_char == ' ') {
+                 // Если пробел, то проверка токена:
+
+
             }
-            // TODO добавить проверку на пробел или знак скобки
-            // написать функцию реализующую алгоритм решения выражений
-        } while (*(++letter) != '\0');
+        } while (*(++token_cur_char) != '\0');
     } // FOR
 
     for (size_t i = 0; i < var_size; i++) {
