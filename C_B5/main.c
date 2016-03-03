@@ -59,7 +59,7 @@ int findInArray(char *word, char **array, size_t size) {
         return -1;
 
     // Выбор номера слова для сравнения
-    size_t word_length = STRLEN(word) - 1;
+    size_t word_length = STRLEN(word);
     // Вычитаем из длинны символ переноса строки
     if (word[word_length - 1] == '\n')
         word_length--;
@@ -166,8 +166,10 @@ int getBool(char** input, size_t size, bool result) {
             // TODO добавить проверку на пробел или знак скобки
             // написать функцию реализующую алгоритм решения выражений
         } while (*(++letter) != '\0');
+    } // FOR
 
-
+    for (size_t i = 0; i < var_size; i++) {
+        printf("%s -> %d\n", var_char[i], var_bool[i]);
     }
 
     return 0;
