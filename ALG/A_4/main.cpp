@@ -68,7 +68,7 @@ private:
     int head;
     int tail;
 
-#define DEFAULT_DEQ_SIZE 1
+#define DEFAULT_DEQ_SIZE 2
 };
 
 int main() {
@@ -108,6 +108,86 @@ int main() {
     return 0;
 }
 
+void Deq::pushBack( int number ) {
+    // To tail
+    if ( tail + 1 == head ) {
+        // хвост встретился с головой
+        // расширение массива
+        Deq::expandBuffer();
+    }
+    buffer[tail] = number;
+    tail = (tail + 1) % bufferSize;
+}
+
+void Deq::pushFront( int number ) {
+    // To head
+    // First: head--;
+    head--;
+    if (head < 0) head = bufferSize - 1;
+    // Проврка встречи с хвостом
+    // т.к. head уже уменьшился, то необходимости в head - 1 нет
+    if (head == tail) {
+        // расширение массива
+        head = (head + 1) % bufferSize;
+        Deq::expandBuffer();
+        if (--head < 0) head = bufferSize - 1;
+    }
+    buffer[head] = number;
+}
+
+int Deq::popFront() {
+    if (head == tail) return -1;
+    int result = buffer[head];
+
+    // Голова всегда смотрит на элемент со значением
+    head = (head + 1) % bufferSize;
+
+    return result;
+}
+
+int Deq::popBack() {
+    // По просьбе заказчика на пустой запрос возвращаем -1
+    if (head == tail) return -1;
+
+    // Хвост всегда смотрим на пустой элемент,
+    // поэтому сначала нужно его уменьшить
+    tail--;
+    if (tail < 0) tail = bufferSize - 1;
+
+    return buffer[tail];
+}
+
+int Deq::expandBuffer() {
+    // Т.к. всё равно необходимо отсортровать массив,
+    // то инициализируем полностью новую память
+    int *buffer_temp = (int *)malloc(bufferSize * 2 * sizeof(int));
+
+    if (errno != ENOMEM || buffer_temp != NULL) {
+        // Копируем массив в новую память
+        // Сначала от head до конца массива
+        memcpy(buffer_temp, buffer + head, (bufferSize - head) * sizeof(int));
+        // Если tail < head от начала массива до tail
+        if (tail <= head) {
+            memcpy(buffer_temp + bufferSize - head, buffer, tail * sizeof(int));
+            tail = tail + bufferSize - head;
+        } else {
+            tail = head - tail;
+        }
+        // Голова всегда в начале
+        // а хвост численно равен длине дека
+        head = 0;
+
+        free(buffer);
+        buffer = buffer_temp;
+        bufferSize *= 2;
+        return 0;
+    } else {
+        // Ошибка выделения памяти
+        printf("error in allocation memory for deque");
+        return 1;
+    }
+}
+
 Deq::Deq() :
     bufferSize( DEFAULT_DEQ_SIZE ),
     head( 0 ),
@@ -122,61 +202,4 @@ Deq::Deq( int size ) :
     tail( 0 )
 {
     buffer = (int *)malloc(size * sizeof(int));
-}
-
-void Deq::pushBack( int number ) {
-    if (( tail + 1 ) % bufferSize == head) {
-        if (Deq::expandBuffer() == 1)
-            return;
-    }
-    buffer[tail] = number;
-    tail = ( tail + 1 ) % bufferSize;
-}
-
-void Deq::pushFront( int number ) {
-    if (head != tail && --head == -1) head = bufferSize - 1;
-    if (head == tail && head != 0) {
-        if (Deq::expandBuffer() == 1)
-            return;
-        head = bufferSize - 1;
-    }
-    buffer[head] = number;
-}
-
-int Deq::popBack() {
-    if (head == tail) return -1;
-    int index = tail - 1;
-    if (index < 0) index = bufferSize - 1;
-    int result = buffer[index];
-
-    if (--tail == -1) tail = bufferSize - 1;
-
-    return result;
-}
-
-int Deq::popFront() {
-    if (head == tail) return -1;
-    int result = buffer[head];
-
-    head = (head + 1) % bufferSize;
-
-    return result;
-}
-
-int Deq::expandBuffer() {
-    int *buffer_temp = (int *)realloc(buffer, bufferSize * 2 * sizeof(int));
-    if (errno != ENOMEM && buffer_temp != NULL) {
-        buffer = buffer_temp;
-        // Если голова не в нуле, то переносим хвост
-        // и всё, что было перед ним в конец головы
-        if (head != 0) {
-            memcpy(buffer + bufferSize, buffer, tail * sizeof(int));
-            tail += bufferSize;
-        }
-        bufferSize *= 2;
-        return 0;
-    } else {
-        printf("error in allocation memory for deq\n");
-        return 1;
-    }
 }
