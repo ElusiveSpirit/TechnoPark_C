@@ -30,6 +30,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "errno.h"
+#include "string.h"
 
 #define PUSH_FRONT 1
 #define POP_FRONT 2
@@ -67,7 +68,7 @@ private:
     int head;
     int tail;
 
-#define DEFAULT_DEQ_SIZE 20
+#define DEFAULT_DEQ_SIZE 1
 };
 
 int main() {
@@ -124,7 +125,7 @@ Deq::Deq( int size ) :
 }
 
 void Deq::pushBack( int number ) {
-    if (( tail + 1 ) % bufferSize != head) {
+    if (( tail + 1 ) % bufferSize == head) {
         if (Deq::expandBuffer() == 1)
             return;
     }
@@ -137,13 +138,16 @@ void Deq::pushFront( int number ) {
     if (head == tail) {
         if (Deq::expandBuffer() == 1)
             return;
+        head = bufferSize - 1;
     }
     buffer[head] = number;
 }
 
 int Deq::popBack() {
     if (head == tail) return -1;
-    int result = buffer[tail];
+    int index = tail - 1;
+    if (index < 0) index = bufferSize - 1;
+    int result = buffer[index];
 
     if (--tail == -1) tail = bufferSize - 1;
 
@@ -163,6 +167,12 @@ int Deq::expandBuffer() {
     int *buffer_temp = (int *)realloc(buffer, bufferSize * 2 * sizeof(int));
     if (errno != ENOMEM && buffer_temp != NULL) {
         buffer = buffer_temp;
+        // Если голова не в нуле, то переносим хвост
+        // и всё, что было перед ним в конец головы
+        if (head != 0) {
+            memcpy(buffer + bufferSize, buffer, tail * sizeof(int));
+            tail += bufferSize;
+        }
         bufferSize *= 2;
         return 0;
     } else {
