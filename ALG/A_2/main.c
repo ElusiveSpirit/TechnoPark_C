@@ -29,6 +29,7 @@ int findSumElements(int *a, size_t size_a, int *b, size_t size_b, int k) {
     size_t i = 0;
     int j = size_b - 1;
 
+    // Проход по массиву одновременно с двух сторон
     while (i < size_a && j >= 0) {
         if (a[i] + b[j] == k) {
             i++;
@@ -69,11 +70,15 @@ int main() {
         free(a);
         return 0;
     }
+    // Ввод К
     int k = 0;
     if (scanf("%d\n", &k) == 0)
         return 0;
 
+
     printf("%d\n", findSumElements(a, size_a, b, size_b, k));
 
+    free(a);
+    free(b);
     return 0;
 }
