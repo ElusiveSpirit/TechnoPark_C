@@ -26,12 +26,14 @@ int getMultiplierArray(int number, int *resultArray) {
     if (resultArray == NULL)
         return 0;
 
+    int prevNumber = 2;
     // Поиск простых множителей до 1
     while (number > 1) {
         // При нахождении первого множителя число number
         // делится на найденное число
-        for (int i = 2; i <= number; i++) {
+        for (int i = prevNumber; i <= number; i++) {
             if (number % i == 0) {
+                prevNumber = i;
                 resultArray[size] = i;
 
                 resultArray = (int* )realloc(resultArray, (++size + 1) * sizeof(int));
@@ -55,8 +57,10 @@ int main() {
         return 0;
 
     size = getMultiplierArray(number, array);
-    if (array == NULL)
+    if (array == NULL) {
+        free(array);
         return 0;
+    }
 
     for (int i = 0; i < size; i++)
         printf("%d ", array[i]);
