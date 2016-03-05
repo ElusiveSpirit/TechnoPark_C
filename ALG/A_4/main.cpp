@@ -110,7 +110,7 @@ int main() {
 
 void Deq::pushBack( int number ) {
     // To tail
-    if ( tail + 1 == head ) {
+    if ( (tail + 1) % bufferSize == head) {
         // хвост встретился с головой
         // расширение массива
         Deq::expandBuffer();
@@ -121,17 +121,13 @@ void Deq::pushBack( int number ) {
 
 void Deq::pushFront( int number ) {
     // To head
-    // First: head--;
-    head--;
-    if (head < 0) head = bufferSize - 1;
     // Проврка встречи с хвостом
-    // т.к. head уже уменьшился, то необходимости в head - 1 нет
-    if (head == tail) {
+    if (head == (tail + 1) % bufferSize) {
         // расширение массива
-        head = (head + 1) % bufferSize;
         Deq::expandBuffer();
-        if (--head < 0) head = bufferSize - 1;
     }
+
+    if (--head < 0) head = bufferSize - 1;
     buffer[head] = number;
 }
 
@@ -171,7 +167,7 @@ int Deq::expandBuffer() {
             memcpy(buffer_temp + bufferSize - head, buffer, tail * sizeof(int));
             tail = tail + bufferSize - head;
         } else {
-            tail = head - tail;
+            tail = head + tail;
         }
         // Голова всегда в начале
         // а хвост численно равен длине дека
