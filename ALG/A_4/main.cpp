@@ -134,8 +134,8 @@ void Deq::pushBack( int number ) {
 }
 
 void Deq::pushFront( int number ) {
-    if (--head == -1) head = bufferSize - 1;
-    if (head == tail) {
+    if (head != tail && --head == -1) head = bufferSize - 1;
+    if (head == tail && head != 0) {
         if (Deq::expandBuffer() == 1)
             return;
         head = bufferSize - 1;
