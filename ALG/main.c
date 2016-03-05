@@ -25,39 +25,20 @@
 int findMax(size_t size, int a[size]) {
     if (size == 0) return 0;
 
-    int left = 0,
-        right = size - 1,
-        middle = size / 2,
-        lm = (middle - left) / 2,
-        rm = middle + (right - middle) / 2;
+    int first = 0,
+        second = 0,
+        third = 0;
+    size_t i = 1;
+    while (i - 1 < size) {
 
-    while (right - left > 2) {
-        if ((a[middle] > a[lm] && a[middle] > a[rm])) {
-            left = lm;
-            right = rm;
-        } else if (middle == rm || middle == lm) {
-            if (a[middle] <= a[right]) {
-                left = middle;
-                middle = right - 1;
-            } else {
-                middle = left + 1;
-                right = middle;
-            }
-        } else if (a[middle] <= a[rm]) {
-            left = middle;
-            middle = rm;
+        
+
+        if (i * 2 >= size && i - 1 != size) {
+            i = size - 1;
         } else {
-            right = middle;
-            middle = lm;
+            i *= 2;
         }
-        lm = left + (middle - left) / 2;
-        rm = middle + (right - middle) / 2;
     }
-    if (a[middle] < a[left])
-        return left;
-    if (a[middle] < a[right])
-        return right;
-    return middle;
 }
 
 int main() {
