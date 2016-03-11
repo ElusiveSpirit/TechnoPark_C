@@ -52,8 +52,6 @@ int findMaxWithPriority(size_t size, int a[size]) {
         }
     }
 
-    if (second == third) first = second;
-
     return findMaxInRange(first, third, size, a);
 }
 
@@ -81,14 +79,17 @@ int findMaxInRange(int left, int right, size_t size, int a[size]) {
     if (left == right)
         return left;
 
+    // Поиск идёт по 5 точкам
     int middle = left + ((right - left) / 2),
         lm = left + (middle - left) / 2,
         rm = middle + (right - middle) / 2;
-    //printf("\n%i %i %i %i %i\n", left, lm, middle, rm, right);
+
     while (right - left > 2) {
+        // Если точка middle самая большая, то сужаются рамки
         if ((a[middle] > a[lm] && a[middle] > a[rm])) {
             left = lm;
             right = rm;
+        // Если центральная левая или правая точка встретилась с middle
         } else if (middle == rm || middle == lm) {
             if (a[middle] <= a[rm]) {
                 left = middle;
@@ -97,21 +98,22 @@ int findMaxInRange(int left, int right, size_t size, int a[size]) {
                 middle = lm + 1;
                 right = middle;
             }
+        // Если middle < правой центральной точки, то происходит
+        // смещение вправо
         } else if (a[middle] <= a[rm]) {
             left = middle;
             middle = rm;
+        // Иначе - смещение влево
         } else {
             right = middle;
             middle = lm;
         }
+        // Обновление центральных точек
         lm = left + (middle - left) / 2;
         rm = middle + (right - middle) / 2;
     }
-    if (middle == left)
-        middle++;
-    else if (middle == right)
-        middle--;
 
+    // На выходе три точки
     if (a[middle] < a[left])
         return left;
     if (a[middle] < a[right])
