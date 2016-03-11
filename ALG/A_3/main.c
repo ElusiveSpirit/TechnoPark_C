@@ -24,8 +24,8 @@
 int findMaxInRange(int left, int right, size_t size, int a[size]);
 
 int findMaxWithPriority(size_t size, int a[size]) {
-    if (size == 0) return 0;
-    if (size == 1) return 1;
+    if (size == 0) return -1;
+    if (size == 1) return 0;
     if (size == 2) {
         if (a[0] > a[1])
             return 0;
@@ -39,7 +39,7 @@ int findMaxWithPriority(size_t size, int a[size]) {
         second = 0,
         third = 1;
     size_t i = 2;
-    while (i < size && a[second] < a[third]) {
+    while (a[second] < a[third] && third < size - 1) {
 
         first = second;
         second = third;
@@ -52,6 +52,8 @@ int findMaxWithPriority(size_t size, int a[size]) {
         }
     }
 
+    if (second == third) first = second;
+
     return findMaxInRange(first, third, size, a);
 }
 
@@ -59,7 +61,7 @@ int findMaxWithPriority(size_t size, int a[size]) {
 int main() {
     // Ввод массивов
     int size = 0;
-    if (scanf("%d\n", &size) == 0)
+    if (scanf("%d", &size) == 0)
         return 0;
     int a[size];
     for (size_t i = 0; i < size; i++) {
@@ -74,20 +76,25 @@ int main() {
 
 
 int findMaxInRange(int left, int right, size_t size, int a[size]) {
-    int middle = size / 2,
+    if (size == 0)
+        return -1;
+    if (left == right)
+        return left;
+
+    int middle = left + ((right - left) / 2),
         lm = left + (middle - left) / 2,
         rm = middle + (right - middle) / 2;
-
+    //printf("\n%i %i %i %i %i\n", left, lm, middle, rm, right);
     while (right - left > 2) {
         if ((a[middle] > a[lm] && a[middle] > a[rm])) {
             left = lm;
             right = rm;
         } else if (middle == rm || middle == lm) {
-            if (a[middle] <= a[right]) {
+            if (a[middle] <= a[rm]) {
                 left = middle;
-                middle = right - 1;
+                middle = rm - 1;
             } else {
-                middle = left + 1;
+                middle = lm + 1;
                 right = middle;
             }
         } else if (a[middle] <= a[rm]) {
