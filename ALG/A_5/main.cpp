@@ -15,7 +15,7 @@
         Формат входных данных. ​
     Строка, содержащая символы (){}[] и, возможно, перевод строки.
         Формат выходных данных. ​
-        Если возможно, ­вывести минимальную корректную последовательность, иначе ­
+    Если возможно, ­вывести минимальную корректную последовательность, иначе ­
     напечатать IMPOSSIBLE​
 ********************************************************
 */
@@ -38,16 +38,9 @@ int getCharArray(char** ppInputArray, size_t &size) {
 
     while (fgets(pBuff, MAX_SIZE, stdin)) {
         size_t buffSize = STRLEN(pBuff);
-        char *pTemp = NULL;
-        /*   char *pTemp = (char *)realloc(pArray,
-                (size + buffSize + 1) * sizeof(char));*/
-        // Valgrind tells, that use realloc with (char*)NULL is an error, so:
-        if (pArray)
-            pTemp = (char *)realloc(pArray,
-                (size + buffSize + 1) * sizeof(char));
-        else
-            pTemp = (char *)malloc((size + buffSize + 1) * sizeof(char));
 
+        char *pTemp = (char *)realloc(pArray,
+                (size + buffSize + 1) * sizeof(char));
         if (pTemp == NULL) {
             if (pArray != NULL)
                 free(pArray);
@@ -56,13 +49,13 @@ int getCharArray(char** ppInputArray, size_t &size) {
         }
         pArray = pTemp;
         pTemp = (char *)memcpy(pArray + size, pBuff, buffSize);
+        size += buffSize;
         if (pTemp == NULL) {
             free(pArray);
             free(pBuff);
             return 1;
         }
-        size += buffSize;
-        ppInputArray[size] = '\0';
+        pArray[size] = '\0';
     }
     free(pBuff);
 
