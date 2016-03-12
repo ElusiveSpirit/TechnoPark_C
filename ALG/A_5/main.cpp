@@ -22,15 +22,44 @@
 #include "stdlib.h"
 #include "stdio.h"
 #include "string.h"
+#include "stack.h"
 
 #define STRLEN(s) ({int retval = 0; while (*(s + ++retval)); retval;})
 #define MAX_SIZE 6
 
-using namespace std;
 
-int getCharArray(char** ppInputArray, size_t &size) {
+int addCharArray(char**, size_t&);
+int addBrackets(char*);
+
+int main() {
+
+    size_t size = 0;
+    char **ppInputArray = (char **)malloc(sizeof(char *));
+
+    if (addCharArray(ppInputArray, size) == 1) {
+        free(ppInputArray);
+        printf("error\n");
+        return 1;
+    }
+
+    printf("%s", *ppInputArray);
+
+    free(*ppInputArray);
+    free(ppInputArray);
+
+    return 0;
+}
+
+int addBrackets(char* pInputArray) {
+    
+
+    return 0;
+}
+
+int addCharArray(char** ppInputArray, size_t &size) {
     if (ppInputArray == NULL) return 1;
 
+    size = 0;
     char *pArray = NULL;
     char *pBuff = (char *)malloc(MAX_SIZE * sizeof(char));
     if (pBuff == NULL)
@@ -60,23 +89,5 @@ int getCharArray(char** ppInputArray, size_t &size) {
     free(pBuff);
 
     *ppInputArray = pArray;
-    return 0;
-}
-
-int main() {
-    size_t size = 0;
-    char **ppInputArray = (char **)malloc(sizeof(char *));
-
-    if (getCharArray(ppInputArray, size) == 1) {
-        free(ppInputArray);
-        printf("error\n");
-        return 1;
-    }
-
-    printf("%s", *ppInputArray);
-
-    free(*ppInputArray);
-    free(ppInputArray);
-
     return 0;
 }
