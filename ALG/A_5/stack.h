@@ -8,7 +8,7 @@ public:
     void push( char );
     char pop();
 
-    bool isEmpty() const { return top == 0; };
+    bool isEmpty() const { return top == -1; };
 
 private:
     // Расширяет выделенную под массив память
@@ -32,7 +32,7 @@ void Stack::push( char ch ) {
 }
 
 char Stack::pop() {
-    if ( top == 0 )
+    if ( top == -1 )
         return 0;
 
     return buffer[top--];
@@ -50,14 +50,14 @@ int Stack::expandBuffer() {
 
 Stack::Stack() :
     bufferSize( DEFAULT_DEQ_SIZE ),
-    top( 0 )
+    top( -1 )
 {
     buffer = (char *)malloc(DEFAULT_DEQ_SIZE * sizeof(char));
 }
 
 Stack::Stack( char size ) :
     bufferSize( size ),
-    top( 0 )
+    top( -1 )
 {
     buffer = (char *)malloc(size * sizeof(char));
 }

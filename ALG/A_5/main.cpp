@@ -23,6 +23,7 @@
 #include "stdio.h"
 #include "string.h"
 #include "stack.h"
+#include <iostream>
 
 #define STRLEN(s) ({int retval = 0; while (*(s + ++retval)); retval;})
 #define MAX_SIZE 6
@@ -42,7 +43,8 @@ int main() {
         return 1;
     }
 
-    printf("%s", *ppInputArray);
+    addBrackets(*ppInputArray);
+//    printf("%s", *ppInputArray);
 
     free(*ppInputArray);
     free(ppInputArray);
@@ -51,8 +53,153 @@ int main() {
 }
 
 int addBrackets(char* pInputArray) {
-    
+    if (pInputArray == NULL)
+        return 1;
 
+    Stack input;
+    Stack outStack;
+    char *pChar = pInputArray;
+    char prevChar = 0; //*(pChar++)
+    while (*pChar) {
+        switch (*pChar) {
+            // Для открывающих скобок условий нет
+            case '(':
+                input.push(*pChar);
+                outStack.push(*pChar);
+                break;
+            case '[':
+                input.push(*pChar);
+                outStack.push(*pChar);
+                break;
+            case '{':
+                input.push(*pChar);
+                outStack.push(*pChar);
+                break;
+
+            // Условия для закрывающих
+            case ')':
+                if (prevChar == '(') {
+                    prevChar = input.pop();
+                    outStack.push(*pChar);
+                } else if (prevChar == '{' || prevChar == '[') {
+                    printf("IMPOSSIBLE\n");
+                    return 1;
+                } else {
+                    input.push(*pChar);
+                    outStack.push(*pChar);
+                }
+                break;
+            case ']':
+                if (prevChar == '[') {
+                    prevChar = input.pop();
+                    outStack.push(*pChar);
+                } else if (prevChar == '{' || prevChar == '(') {
+                    printf("IMPOSSIBLE\n");
+                    return 1;
+                } else {
+                    input.push(*pChar);
+                    outStack.push(*pChar);
+                }
+                break;
+            case '}':
+                if (prevChar == '{') {
+                    prevChar = input.pop();
+                    outStack.push(*pChar);
+                } else if (prevChar == '(' || prevChar == '[') {
+                    printf("IMPOSSIBLE\n");
+                    return 1;
+                } else {
+                    input.push(*pChar);
+                    outStack.push(*pChar);
+                }
+                break;
+        }
+
+        prevChar = *pChar;
+        pChar++;
+    }
+
+    Stack stackTemp;
+    Stack waitStack;
+    char wait_for_char = 0;
+    while (!outStack.isEmpty()) {
+        char ch = outStack.pop();
+
+        if (ch == ')' || ch == '}' || ch == ']') {
+            /*if (wait_for_char != 0) {
+                waitStack.push(ch);
+                /*int top = 0;
+                while (!outStack.isEmpty()) {
+                    stackTemp.push(outStack.pop());
+                    top++;
+                }
+                if (ch == ')') {
+                    outStack.push('(');
+                } else if (ch == '}') {
+                    outStack.push('{');
+                } else if (ch == ']') {
+                    outStack.push('[');
+                }
+                top++;
+                while (top > 0) {
+                    outStack.push(stackTemp.pop());
+                    top--;
+                }*/
+            //}
+            //wait_for_char = ch;
+            waitStack.push(ch);
+            stackTemp.push(ch);
+        } else if (ch == '(' || ch == '{' || ch == '[') {
+            // Если ожидаемая скобка совпадает, то обнуляем и закидываем
+            // всё во временный стек
+            wait_for_char = waitStack.pop();
+            if ((ch == '(' && wait_for_char == ')') ||
+                    (ch == '{' && wait_for_char == '}') ||
+                    (ch == '[' && wait_for_char == ']')) {
+                stackTemp.push(ch);
+            } else
+            // Если открывающей скобки не ждали, значит, нужно добавить
+            // закрывающую в конец -> перебрасываем в первый стек всё добро
+            // из временного и добавляем скобку.
+            // Затем возвращаемся обратно
+            if (wait_for_char == 0) {
+                int top = 0;
+                outStack.push(ch);
+                while (!stackTemp.isEmpty()) {
+                    outStack.push(stackTemp.pop());
+                    top++;
+                }
+                if (ch == '(') {
+                    stackTemp.push(')');
+                } else if (ch == '{') {
+                    stackTemp.push('}');
+                } else if (ch == '[') {
+                    stackTemp.push(']');
+                }
+                top++;
+                while (top > 0) {
+                    stackTemp.push(outStack.pop());
+                    top--;
+                }
+            }
+            
+        }
+    }
+    printf("OK\n");
+    while (!waitStack.isEmpty()) {
+        char ch = waitStack.pop();
+        if (ch == ')') {
+            stackTemp.push('(');
+        } else if (ch == '}') {
+            stackTemp.push('{');
+        } else if (ch == ']') {
+            stackTemp.push('[');
+        }
+    }
+    while (!stackTemp.isEmpty())
+        std::cout << stackTemp.pop();
+
+    std::cout << std::endl;
     return 0;
 }
 
