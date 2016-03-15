@@ -85,7 +85,7 @@ int addBrackets(char* pInputArray) {
     if (pInputArray == NULL)
         return 1;
 
-    Stack input;
+    /*Stack input;
     Stack outStack;
     char *pChar = pInputArray;
     char prevChar = 0;
@@ -146,17 +146,38 @@ int addBrackets(char* pInputArray) {
 
         prevChar = *pChar;
         pChar++;
-    }
+    }*/
 
     Stack waitStackLeft, waitStackRight;
     char wait_for_char_r = 0;
-    pChar = pInputArray;
+    char  *pChar = pInputArray;
+    char *pPrevChar = NULL, *pPrevCharPointer = NULL;
     while (*pChar != '\0') {
-        char ch = *pChar++;
+        char ch = *pChar;
 
         if (ch == '(' || ch == '{' || ch == '[') {
             waitStackRight.push(ch);
         } else if (ch == ')' || ch == '}' || ch == ']') {
+
+            if (pPrevChar != NULL && (
+                    (ch == ')' && *pPrevChar == '(') ||
+                    (ch == '}' && *pPrevChar == '{') ||
+                    (ch == ']' && *pPrevChar == '['))) {
+                while (pPrevChar > pInputArray && (
+                        *pPrevChar == '}' ||
+                        *pPrevChar == ']' ||
+                        *pPrevChar == ')'))
+                    pPrevChar--;
+                if (pPrevChar == pInputArray && (
+                        *pPrevChar == '}' ||
+                        *pPrevChar == ']' ||
+                        *pPrevChar == ')')) {
+                    pPrevChar == NULL;
+                }
+            } else {
+                printf("IMPOSSIBLE\n");
+                return 1;
+            }
 
             wait_for_char_r = waitStackRight.pop();
             if (wait_for_char_r == 0 ||
@@ -168,9 +189,12 @@ int addBrackets(char* pInputArray) {
             }
 
         }
+        pPrevChar = pChar;
+        pChar++;
     }
+    printf("OK\n" );
     // Добавление скобок сзади
-    while (!waitStackRight.isEmpty()) {
+    /*while (!waitStackRight.isEmpty()) {
         char ch = waitStackRight.pop();
         if (ch == '(') {
             outStack.push(')');
@@ -197,7 +221,7 @@ int addBrackets(char* pInputArray) {
     }
 
     free(pInputArray);
-    pInputArray = stackTemp.toCharArray();
+    pInputArray = stackTemp.toCharArray();*/
     return 0;
 }
 
