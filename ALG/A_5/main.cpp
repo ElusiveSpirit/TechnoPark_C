@@ -28,7 +28,7 @@
 #define MAX_SIZE 6
 
 
-int addCharArray(char**, size_t&);
+int getCharArray(char **, size_t&);
 int addBrackets(char*);
 
 class Stack {
@@ -40,6 +40,8 @@ public:
     // Методы доступа
     void push( char );
     char pop();
+
+    char *toCharArray();
 
     bool isEmpty() const { return top == -1; };
 
@@ -54,27 +56,28 @@ private:
     char bufferSize;
     char top;
 
-#define DEFAULT_DEQ_SIZE 2
+#define DEFAULT_DEQ_SIZE 8
 };
 
 
 int main() {
 
     size_t size = 0;
-    char **ppInputArray = (char **)malloc(sizeof(char *));
+    char *pInputArray = NULL;
 
-    if (addCharArray(ppInputArray, size) == 1) {
-        free(ppInputArray);
+    if (getCharArray(&pInputArray, size) == 1) {
         printf("error\n");
         return 1;
     }
 
-    addBrackets(*ppInputArray);
-//    printf("%s", *ppInputArray);
+    if (addBrackets(pInputArray) == 1 || pInputArray == NULL) {
+        printf("error\n");
+        return 1;
+    }
 
-    free(*ppInputArray);
-    free(ppInputArray);
+    printf("%s\n", pInputArray);
 
+    free(pInputArray);
     return 0;
 }
 
@@ -85,7 +88,7 @@ int addBrackets(char* pInputArray) {
     Stack input;
     Stack outStack;
     char *pChar = pInputArray;
-    char prevChar = 0; //*(pChar++)
+    char prevChar = 0;
     while (*pChar) {
         switch (*pChar) {
             // Для открывающих скобок условий нет
@@ -145,74 +148,45 @@ int addBrackets(char* pInputArray) {
         pChar++;
     }
 
-    Stack stackTemp;
-    Stack waitStack;
-    char wait_for_char = 0;
-    while (!outStack.isEmpty()) {
-        char ch = outStack.pop();
+    Stack waitStackLeft, waitStackRight;
+    char wait_for_char_r = 0;
+    pChar = pInputArray;
+    while (*pChar != '\0') {
+        char ch = *pChar++;
 
-        if (ch == ')' || ch == '}' || ch == ']') {
-            /*if (wait_for_char != 0) {
-                waitStack.push(ch);
-                /*int top = 0;
-                while (!outStack.isEmpty()) {
-                    stackTemp.push(outStack.pop());
-                    top++;
-                }
-                if (ch == ')') {
-                    outStack.push('(');
-                } else if (ch == '}') {
-                    outStack.push('{');
-                } else if (ch == ']') {
-                    outStack.push('[');
-                }
-                top++;
-                while (top > 0) {
-                    outStack.push(stackTemp.pop());
-                    top--;
-                }*/
-            //}
-            //wait_for_char = ch;
-            waitStack.push(ch);
-            stackTemp.push(ch);
-        } else if (ch == '(' || ch == '{' || ch == '[') {
-            // Если ожидаемая скобка совпадает, то обнуляем и закидываем
-            // всё во временный стек
-            wait_for_char = waitStack.pop();
-            if ((ch == '(' && wait_for_char == ')') ||
-                    (ch == '{' && wait_for_char == '}') ||
-                    (ch == '[' && wait_for_char == ']')) {
-                stackTemp.push(ch);
-            } else
-            // Если открывающей скобки не ждали, значит, нужно добавить
-            // закрывающую в конец -> перебрасываем в первый стек всё добро
-            // из временного и добавляем скобку.
-            // Затем возвращаемся обратно
-            if (wait_for_char == 0) {
-                int top = 0;
-                outStack.push(ch);
-                while (!stackTemp.isEmpty()) {
-                    outStack.push(stackTemp.pop());
-                    top++;
-                }
-                if (ch == '(') {
-                    stackTemp.push(')');
-                } else if (ch == '{') {
-                    stackTemp.push('}');
-                } else if (ch == '[') {
-                    stackTemp.push(']');
-                }
-                top++;
-                while (top > 0) {
-                    stackTemp.push(outStack.pop());
-                    top--;
-                }
+        if (ch == '(' || ch == '{' || ch == '[') {
+            waitStackRight.push(ch);
+        } else if (ch == ')' || ch == '}' || ch == ']') {
+
+            wait_for_char_r = waitStackRight.pop();
+            if (wait_for_char_r == 0 ||
+                    ((ch == ')' && wait_for_char_r != '(') &&
+                    (ch == '}' && wait_for_char_r != '{') &&
+                    (ch == ']' && wait_for_char_r != '['))) {
+
+                waitStackLeft.push(ch);
             }
 
         }
-    } 
-    while (!waitStack.isEmpty()) {
-        char ch = waitStack.pop();
+    }
+    // Добавление скобок сзади
+    while (!waitStackRight.isEmpty()) {
+        char ch = waitStackRight.pop();
+        if (ch == '(') {
+            outStack.push(')');
+        } else if (ch == '{') {
+            outStack.push('}');
+        } else if (ch == '[') {
+            outStack.push(']');
+        }
+    }
+    // Реверсируем стек
+    Stack stackTemp, leftStackTemp;
+    while (!outStack.isEmpty()) stackTemp.push(outStack.pop());
+    while (!waitStackLeft.isEmpty()) leftStackTemp.push(waitStackLeft.pop());
+    // Добавление скобок спереди
+    while (!leftStackTemp.isEmpty()) {
+        char ch = leftStackTemp.pop();
         if (ch == ')') {
             stackTemp.push('(');
         } else if (ch == '}') {
@@ -221,16 +195,14 @@ int addBrackets(char* pInputArray) {
             stackTemp.push('[');
         }
     }
-    while (!stackTemp.isEmpty())
-        std::cout << stackTemp.pop();
 
-    std::cout << std::endl;
+    free(pInputArray);
+    pInputArray = stackTemp.toCharArray();
     return 0;
 }
 
-int addCharArray(char** ppInputArray, size_t &size) {
-    if (ppInputArray == NULL) return 1;
 
+int getCharArray(char **pInputArray, size_t &size) {
     size = 0;
     char *pArray = NULL;
     char *pBuff = (char *)malloc(MAX_SIZE * sizeof(char));
@@ -260,7 +232,7 @@ int addCharArray(char** ppInputArray, size_t &size) {
     }
     free(pBuff);
 
-    *ppInputArray = pArray;
+    *pInputArray = pArray;
     return 0;
 }
 
@@ -288,6 +260,26 @@ int Stack::expandBuffer() {
     buffer = pTemp;
     bufferSize *= 2;
     return 0;
+}
+
+char *Stack::toCharArray() {
+    if (this->isEmpty())
+        return NULL;
+
+
+    char *result = (char *)malloc((top + 2) * sizeof(char));
+    if (result == NULL) {
+        printf("error in allocate memory function \'Stack::toCharArray()\'");
+        return NULL;
+    }
+
+    int j = 0;
+    for (int i = top; i >= 0; i--) {
+        result[j++] = buffer[i];
+    }
+
+    result[top + 1] = '\0';
+    return result;
 }
 
 Stack::Stack() :
