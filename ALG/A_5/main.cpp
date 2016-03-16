@@ -159,10 +159,11 @@ int addBrackets(char* pInputArray) {
             waitStackRight.push(ch);
         } else if (ch == ')' || ch == '}' || ch == ']') {
 
-            if (pPrevChar != NULL && (
+            if (pPrevChar == NULL ||
                     (ch == ')' && *pPrevChar == '(') ||
                     (ch == '}' && *pPrevChar == '{') ||
-                    (ch == ']' && *pPrevChar == '['))) {
+                    (ch == ']' && *pPrevChar == '[')) {
+                printf("%c -> ", *pPrevChar);
                 while (pPrevChar > pInputArray && (
                         *pPrevChar == '}' ||
                         *pPrevChar == ']' ||
@@ -174,6 +175,7 @@ int addBrackets(char* pInputArray) {
                         *pPrevChar == ')')) {
                     pPrevChar == NULL;
                 }
+                printf("%c\n", *pPrevChar);
             } else {
                 printf("IMPOSSIBLE\n");
                 return 1;
