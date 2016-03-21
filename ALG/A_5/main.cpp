@@ -28,8 +28,8 @@
 #define MAX_SIZE 6
 
 
-int getCharArray(char **, size_t&);
-int addBrackets(char*);
+int getCharArray(char *&, size_t&);
+int addBrackets(char*&);
 
 class Stack {
 public:
@@ -65,14 +65,13 @@ int main() {
     size_t size = 0;
     char *pInputArray = NULL;
 
-    if (getCharArray(&pInputArray, size) == 1) {
-        printf("error\n");
-        return 1;
+    if (getCharArray(pInputArray, size) == 1 || pInputArray == NULL) {
+        return 0;
     }
 
     if (addBrackets(pInputArray) == 1 || pInputArray == NULL) {
-        printf("error\n");
-        return 1;
+        printf("IMPOSSIBLE\n");
+        return 0;
     }
 
     printf("%s\n", pInputArray);
@@ -81,154 +80,89 @@ int main() {
     return 0;
 }
 
-int addBrackets(char* pInputArray) {
+int addBrackets(char *&pInputArray) {
     if (pInputArray == NULL)
         return 1;
 
-    /*Stack input;
-    Stack outStack;
-    char *pChar = pInputArray;
-    char prevChar = 0;
-    while (*pChar) {
-        switch (*pChar) {
-            // Для открывающих скобок условий нет
-            case '(':
-                input.push(*pChar);
-                outStack.push(*pChar);
-                break;
-            case '[':
-                input.push(*pChar);
-                outStack.push(*pChar);
-                break;
-            case '{':
-                input.push(*pChar);
-                outStack.push(*pChar);
-                break;
-
-            // Условия для закрывающих
-            case ')':
-                if (prevChar == '(') {
-                    prevChar = input.pop();
-                    outStack.push(*pChar);
-                } else if (prevChar == '{' || prevChar == '[') {
-                    printf("IMPOSSIBLE\n");
-                    return 1;
-                } else {
-                    input.push(*pChar);
-                    outStack.push(*pChar);
-                }
-                break;
-            case ']':
-                if (prevChar == '[') {
-                    prevChar = input.pop();
-                    outStack.push(*pChar);
-                } else if (prevChar == '{' || prevChar == '(') {
-                    printf("IMPOSSIBLE\n");
-                    return 1;
-                } else {
-                    input.push(*pChar);
-                    outStack.push(*pChar);
-                }
-                break;
-            case '}':
-                if (prevChar == '{') {
-                    prevChar = input.pop();
-                    outStack.push(*pChar);
-                } else if (prevChar == '(' || prevChar == '[') {
-                    printf("IMPOSSIBLE\n");
-                    return 1;
-                } else {
-                    input.push(*pChar);
-                    outStack.push(*pChar);
-                }
-                break;
-        }
-
-        prevChar = *pChar;
-        pChar++;
-    }*/
-
     Stack waitStackLeft, waitStackRight;
-    char wait_for_char_r = 0;
-    char  *pChar = pInputArray;
-    char *pPrevChar = NULL, *pPrevCharPointer = NULL;
+    char wait_for_char_r = 0, prevChar = 0;
+    char *pChar = pInputArray;
+    Stack tempStack;
+    size_t size = 0;
+
     while (*pChar != '\0') {
+        ++size;
         char ch = *pChar;
 
         if (ch == '(' || ch == '{' || ch == '[') {
             waitStackRight.push(ch);
+            tempStack.push(ch);
         } else if (ch == ')' || ch == '}' || ch == ']') {
-
-            if (pPrevChar == NULL ||
-                    (ch == ')' && *pPrevChar == '(') ||
-                    (ch == '}' && *pPrevChar == '{') ||
-                    (ch == ']' && *pPrevChar == '[')) {
-                printf("%c -> ", *pPrevChar);
-                while (pPrevChar > pInputArray && (
-                        *pPrevChar == '}' ||
-                        *pPrevChar == ']' ||
-                        *pPrevChar == ')'))
-                    pPrevChar--;
-                if (pPrevChar == pInputArray && (
-                        *pPrevChar == '}' ||
-                        *pPrevChar == ']' ||
-                        *pPrevChar == ')')) {
-                    pPrevChar == NULL;
-                }
-                printf("%c\n", *pPrevChar);
+            if (tempStack.isEmpty())
+                prevChar = 0;
+            else
+                prevChar = tempStack.pop();
+            if (prevChar == 0 ||
+                (ch == ')' && prevChar == '(') ||
+                (ch == '}' && prevChar == '{') ||
+                (ch == ']' && prevChar == '[')) {
             } else {
-                printf("IMPOSSIBLE\n");
                 return 1;
             }
 
             wait_for_char_r = waitStackRight.pop();
             if (wait_for_char_r == 0 ||
-                    ((ch == ')' && wait_for_char_r != '(') &&
-                    (ch == '}' && wait_for_char_r != '{') &&
-                    (ch == ']' && wait_for_char_r != '['))) {
+                ((ch == ')' && wait_for_char_r != '(') ||
+                 (ch == '}' && wait_for_char_r != '{') ||
+                 (ch == ']' && wait_for_char_r != '['))) {
 
                 waitStackLeft.push(ch);
             }
 
         }
-        pPrevChar = pChar;
         pChar++;
     }
-    printf("OK\n" );
+    size_t result_size = size * 2 + 1;
+    char *result = (char *)malloc(result_size * sizeof(char));
+    if (result == NULL) return 1;
+    size_t i = 0;
+
     // Добавление скобок сзади
-    /*while (!waitStackRight.isEmpty()) {
+    while (!waitStackLeft.isEmpty() && i < result_size) {
+        char ch = waitStackLeft.pop();
+        if (ch == ')') {
+            result[i++] = '(';
+        } else if (ch == '}') {
+            result[i++] = '{';
+        } else if (ch == ']') {
+            result[i++] = '[';
+        }
+    }
+    size_t j = 0;
+    while (j < size && i < result_size && pInputArray[j] != '\n' && pInputArray[j] != '\0' )
+        result[i++] = pInputArray[j++];
+
+    // Добавление скобок спереди
+    while (!waitStackRight.isEmpty() && i < result_size) {
         char ch = waitStackRight.pop();
         if (ch == '(') {
-            outStack.push(')');
+            result[i++] = ')';
         } else if (ch == '{') {
-            outStack.push('}');
+            result[i++] = '}';
         } else if (ch == '[') {
-            outStack.push(']');
+            result[i++] = ']';
         }
     }
-    // Реверсируем стек
-    Stack stackTemp, leftStackTemp;
-    while (!outStack.isEmpty()) stackTemp.push(outStack.pop());
-    while (!waitStackLeft.isEmpty()) leftStackTemp.push(waitStackLeft.pop());
-    // Добавление скобок спереди
-    while (!leftStackTemp.isEmpty()) {
-        char ch = leftStackTemp.pop();
-        if (ch == ')') {
-            stackTemp.push('(');
-        } else if (ch == '}') {
-            stackTemp.push('{');
-        } else if (ch == ']') {
-            stackTemp.push('[');
-        }
-    }
-
+    if (i < result_size)
+        result[i] = '\0';
     free(pInputArray);
-    pInputArray = stackTemp.toCharArray();*/
+    pInputArray = result;
+
     return 0;
 }
 
 
-int getCharArray(char **pInputArray, size_t &size) {
+int getCharArray(char *&pInputArray, size_t &size) {
     size = 0;
     char *pArray = NULL;
     char *pBuff = (char *)malloc(MAX_SIZE * sizeof(char));
@@ -239,7 +173,7 @@ int getCharArray(char **pInputArray, size_t &size) {
         size_t buffSize = STRLEN(pBuff);
 
         char *pTemp = (char *)realloc(pArray,
-                (size + buffSize + 1) * sizeof(char));
+                                      (size + buffSize + 1) * sizeof(char));
         if (pTemp == NULL) {
             if (pArray != NULL)
                 free(pArray);
@@ -258,7 +192,9 @@ int getCharArray(char **pInputArray, size_t &size) {
     }
     free(pBuff);
 
-    *pInputArray = pArray;
+    if (pInputArray != NULL)
+        free(pInputArray);
+    pInputArray = pArray;
     return 0;
 }
 
@@ -266,16 +202,16 @@ int getCharArray(char **pInputArray, size_t &size) {
 
 void Stack::push( char ch ) {
     if ( top + 1 == bufferSize )
-        if (expandBuffer() == 1)
-            return;
-    buffer[++top] = ch;
+    if (expandBuffer() == 1)
+        return;
+    buffer[(unsigned)++top] = ch;
 }
 
 char Stack::pop() {
     if ( top == -1 )
         return 0;
 
-    return buffer[top--];
+    return buffer[(unsigned)top--];
 }
 
 int Stack::expandBuffer() {
@@ -309,15 +245,15 @@ char *Stack::toCharArray() {
 }
 
 Stack::Stack() :
-    bufferSize( DEFAULT_DEQ_SIZE ),
-    top( -1 )
+        bufferSize( DEFAULT_DEQ_SIZE ),
+        top( -1 )
 {
     buffer = (char *)malloc(DEFAULT_DEQ_SIZE * sizeof(char));
 }
 
 Stack::Stack( char size ) :
-    bufferSize( size ),
-    top( -1 )
+        bufferSize( size ),
+        top( -1 )
 {
     buffer = (char *)malloc(size * sizeof(char));
 }
